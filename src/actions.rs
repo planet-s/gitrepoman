@@ -50,7 +50,9 @@ pub trait GitAction {
     fn get_repos(&self) -> Vec<Repo>;
 
     fn list(&self, namespace: &str) {
-        let repos = self.get_repos()
+        let repos = self.get_repos();
+
+        let repos = repos.iter()
             .filter(|repo| namespace == "" || repo.namespace == namespace);
 
         for repo in repos {
