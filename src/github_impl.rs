@@ -1,6 +1,7 @@
 use github_rs::client::Executor;
 use github_rs::client::Github as GithubApi;
 use github_rs::errors::Error as GithubError;
+use std::collections::HashSet;
 use ::{GitAccount, Repo};
 
 pub struct GitHub {
@@ -16,7 +17,7 @@ impl GitHub {
 
 impl GitAccount for GitHub {
     fn get_repos(&self) -> Vec<Repo> {
-        let mut output = Vec::new();
+        let mut output = HashSet::new();
         for page in 0.. {
             let request = self.client.get()
                 .custom_endpoint(&format!("orgs/{}/repos?page={}", self.org, page))
@@ -25,7 +26,7 @@ impl GitAccount for GitHub {
             if let Ok((_, _, Some(repos))) = request {
                 if repos.len() > 0 {
                     for repo in repos {
-                        output.push(repo);
+                        output.insert(repo);
                     }
                 } else {
                     break
@@ -36,6 +37,6 @@ impl GitAccount for GitHub {
         }
 
 
-        output
+        output.into_iter().collect()
     }
 }

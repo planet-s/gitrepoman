@@ -23,10 +23,16 @@ use std::path::Path;
 use gitlab::Gitlab;
 use rayon::prelude::*;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Eq, Hash)]
 pub struct Repo {
     name: String,
     ssh_url: String
+}
+
+impl PartialEq for Repo {
+    fn eq(&self, other: &Repo) -> bool {
+        &self.name == &other.name
+    }
 }
 
 #[derive(Debug, Fail)]
