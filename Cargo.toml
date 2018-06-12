@@ -1,7 +1,13 @@
 [package]
 name = "gitrepoman"
 version = "0.1.0"
-authors = ["Michael Murphy <mmstickman@gmail.com>"]
+license-file = "LICENSE"
+readme = "README.md"
+repository = "https://gitlab.redox-os.org/redox-os/gitrepoman"
+authors = [
+    "Jeremy Soller <jackpot51@gmail.com>",
+    "Michael Murphy <mmstickman@gmail.com>"
+]
 
 [dependencies]
 gitlab = "0.1008.0"
