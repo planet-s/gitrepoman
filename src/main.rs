@@ -29,10 +29,15 @@ fn main() {
         .about("Manages git repositories across GitHub organizations or GitLab instances")
         .author("Michael Aaron Murphy")
         .arg(Arg::with_name("ssh")
-            .long("--ssh"))
+            .long("--ssh")
+            .short("s"))
         .arg(Arg::with_name("force")
             .long("force")
             .short("f"))
+        .arg(Arg::with_name("config")
+            .long("config")
+            .short("c")
+            .takes_value(true))
         .subcommand(SubCommand::with_name("gitlab")
             .arg(Arg::with_name("DOMAIN").required(true))
             .arg(Arg::with_name("NAMESPACE").required(true))
@@ -42,7 +47,9 @@ fn main() {
             .arg(Arg::with_name("ACTION").required(true)))
         .get_matches();
 
-    let config = match Config::new() {
+    let config_path: &str = matches.value_of("config").unwrap_or("secret.toml");
+
+    let config = match Config::new(config_path) {
         Ok(config) => config,
         Err(why) => {
             eprintln!("failed to get config: {}", why);

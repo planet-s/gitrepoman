@@ -36,8 +36,8 @@ impl From<toml::de::Error> for ConfigError {
 }
 
 impl Config {
-    pub fn new() -> Result<Config, ConfigError> {
-        let mut file = File::open("secret.toml")?;
+    pub fn new(path: &str) -> Result<Config, ConfigError> {
+        let mut file = File::open(path)?;
         let mut buffer = Vec::new();
         file.read_to_end(&mut buffer)?;
         Ok(toml::from_slice::<Config>(&buffer)?)

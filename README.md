@@ -11,11 +11,59 @@ gitlab = API_TOKEN
 github = API_TOKEN
 ```
 
-### SSH
+### Man
 
-By default, `https` URLS are used. To switch to `ssh` URLs, use the `--ssh` flag.
+```
+USAGE:
+    gitrepoman [FLAGS] [OPTIONS] [SUBCOMMAND]
 
-### Usage
+FLAGS:
+    -f, --force      
+    -h, --help       Prints help information
+    -s, --ssh        
+    -V, --version    Prints version information
+
+OPTIONS:
+    -c, --config <config>    
+
+SUBCOMMANDS:
+    github    
+    gitlab    
+    help      Prints this message or the help of the given subcommand(s)
+```
+
+### Github Man
+
+```
+USAGE:
+    gitrepoman github <DOMAIN> <ACTION>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <DOMAIN>    
+    <ACTION>  
+```
+
+### Gitlab Man
+
+```
+USAGE:
+    gitrepoman gitlab <DOMAIN> <NAMESPACE> <ACTION>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <DOMAIN>       
+    <NAMESPACE>    
+    <ACTION> 
+```
+
+### Examples
 
 ```
 gitrepoman github pop-os clone
