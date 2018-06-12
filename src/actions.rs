@@ -50,10 +50,10 @@ pub trait GitAction {
     fn get_repos(&self) -> Vec<Repo>;
 
     fn list(&self, namespace: &str) {
-        for repo in self.get_repos() {
-            if repo.namespace == namespace {
-                continue
-            }
+        let repos = self.get_repos()
+            .filter(|repo| namespace == "" || repo.namespace == namespace);
+
+        for repo in repos {
             println!("{}: {}", repo.name, repo.ssh_url);
         }
     }
@@ -61,7 +61,7 @@ pub trait GitAction {
     fn clone(&self, flags: u8, namespace: &str) {
         let results = self.get_repos()
             .par_iter()
-            .filter(|repo| namespace == "" || repo.name == namespace)
+            .filter(|repo| namespace == "" || repo.namespace == namespace)
             .inspect(|repo| println!("cloning {} from {}", repo.name, repo.get_url()))
             .map(|repo| if !Path::new(&repo.name).exists() {
                 let url = if flags & 0b01 != 0 { repo.get_ssh_url() } else { repo.get_url() };
@@ -82,7 +82,7 @@ pub trait GitAction {
     fn pull(&self, flags: u8, namespace: &str) {
         let results = self.get_repos()
             .par_iter()
-            .filter(|repo| namespace == "" || repo.name == namespace)
+            .filter(|repo| namespace == "" || repo.namespace == namespace)
             .inspect(|repo| println!("pulling {} from {}", repo.name, repo.get_url()))
             .map(|repo| if !Path::new(&repo.name).exists() {
                 let url = if flags & 0b01 != 0 { repo.get_ssh_url() } else { repo.get_url() };
@@ -105,7 +105,7 @@ pub trait GitAction {
     fn checkout(&self, flags: u8, namespace: &str) {
         let results = self.get_repos()
             .par_iter()
-            .filter(|repo| namespace == "" || repo.name == namespace)
+            .filter(|repo| namespace == "" || repo.namespace == namespace)
             .inspect(|repo| println!("checking out {} from {}", repo.name, repo.get_url()))
             .map(|repo| if !Path::new(&repo.name).exists() {
                 let url = if flags & 0b01 != 0 { repo.get_ssh_url() } else { repo.get_url() };
