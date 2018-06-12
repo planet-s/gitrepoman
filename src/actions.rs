@@ -36,7 +36,7 @@ pub enum GitError {
 }
 
 fn git_cmd(args: &[&str], name: &str) -> Result<String, (String, GitError)> {
-    match Command::new("git").args(args).stdout(Stdio::null()).stderr(Stdio::null()).status() {
+    match Command::new("git").args(args).stdout(Stdio::null()).status() {
         Ok(status) => if status.success() {
             Ok(name.to_owned())
         } else {
