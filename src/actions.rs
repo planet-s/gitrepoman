@@ -126,4 +126,46 @@ pub trait GitAction {
             }
         }
     }
+
+    fn mirror_pull(&self, flags: u8, namespace: &str) {
+        let results = self.get_repos()
+            .par_iter()
+            .filter(|repo| namespace == "" || repo.namespace == namespace)
+            .inspect(|repo| println!("pulling mirror {} from {}", repo.name, repo.get_url()))
+            .map(|repo| {
+                let url = if flags & 0b01 != 0 { repo.get_ssh_url() } else { repo.get_url() };
+                if !Path::new(&repo.name).exists() {
+                    git_cmd(&["clone", "--mirror", url, &repo.name], &repo.name)
+                } else {
+                    git_cmd(&["-C", &repo.name, "fetch", url], &repo.name)
+                }
+            })
+            .collect::<Vec<Result<String, (String, GitError)>>>();
+
+        for result in results {
+            match result {
+                Ok(repo) => println!("successfully pulled mirror {}", repo),
+                Err((repo, why)) => println!("failed to pull mirror {}: {}", repo, why)
+            }
+        }
+    }
+
+    fn mirror_push(&self, flags: u8, namespace: &str) {
+        let results = self.get_repos()
+            .par_iter()
+            .filter(|repo| namespace == "" || repo.namespace == namespace)
+            .inspect(|repo| println!("pushing mirror {} to {}", repo.name, repo.get_url()))
+            .map(|repo| {
+                let url = if flags & 0b01 != 0 { repo.get_ssh_url() } else { repo.get_url() };
+                git_cmd(&["-C", &repo.name, "push", "--mirror", url], &repo.name)
+            })
+            .collect::<Vec<Result<String, (String, GitError)>>>();
+
+        for result in results {
+            match result {
+                Ok(repo) => println!("successfully pushed mirror {}", repo),
+                Err((repo, why)) => println!("failed to pushed mirror {}: {}", repo, why)
+            }
+        }
+    }
 }

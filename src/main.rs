@@ -104,6 +104,8 @@ fn main() {
         Ok(Action::Clone) => authenticated.clone(flags, ns),
         Ok(Action::Pull) => authenticated.pull(flags, ns),
         Ok(Action::Checkout) => authenticated.checkout(flags, ns),
+        Ok(Action::MirrorPull) => authenticated.mirror_pull(flags, ns),
+        Ok(Action::MirrorPush) => authenticated.mirror_push(flags, ns),
         Err(cmd) => {
             eprintln!("{} is not a valid command", cmd);
             exit(1);

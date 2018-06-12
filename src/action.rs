@@ -3,6 +3,8 @@ pub enum Action {
     Clone,
     Pull,
     Checkout,
+    MirrorPull,
+    MirrorPush,
 }
 
 impl Action {
@@ -12,6 +14,8 @@ impl Action {
             "clone" => Action::Clone,
             "pull" => Action::Pull,
             "checkout" => Action::Checkout,
+            "mirror_pull" => Action::MirrorPull,
+            "mirror_push" => Action::MirrorPush,
             _ => return Err(input)
         };
 
