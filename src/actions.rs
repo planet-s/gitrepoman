@@ -6,7 +6,18 @@ use rayon::prelude::*;
 #[derive(Debug, Deserialize, Eq, Hash)]
 pub struct Repo {
     pub name: String,
-    pub ssh_url: String
+    pub html_url: String,
+    pub ssh_url: String,
+}
+
+impl Repo {
+    pub fn get_url(&self) -> &str {
+        &self.html_url
+    }
+
+    pub fn get_ssh_url(&self) -> &str {
+        &self.ssh_url
+    }
 }
 
 impl PartialEq for Repo {
@@ -43,12 +54,13 @@ pub trait GitAction {
         }
     }
 
-    fn clone(&self) {
+    fn clone(&self, flags: u8) {
         let results = self.get_repos()
             .par_iter()
             .inspect(|repo| println!("cloning {}", repo.name))
             .map(|repo| if !Path::new(&repo.name).exists() {
-                git_cmd(&["clone", "--recursive", &repo.ssh_url, &repo.name], &repo.name)
+                let url = if flags & 0b01 != 0 { repo.get_ssh_url() } else { repo.get_url() };
+                git_cmd(&["clone", "--recursive", url, &repo.name], &repo.name)
             } else {
                 Ok(repo.name.clone())
             })
@@ -62,12 +74,13 @@ pub trait GitAction {
         }
     }
 
-    fn pull(&self) {
+    fn pull(&self, flags: u8) {
         let results = self.get_repos()
             .par_iter()
             .inspect(|repo| println!("pulling {}", repo.name))
             .map(|repo| if !Path::new(&repo.name).exists() {
-                git_cmd(&["clone", "--recursive", &repo.ssh_url, &repo.name], &repo.name)
+                let url = if flags & 0b01 != 0 { repo.get_ssh_url() } else { repo.get_url() };
+                git_cmd(&["clone", "--recursive", url, &repo.name], &repo.name)
             } else {
                 git_cmd(&["-C", &repo.name, "pull"], &repo.name)
                     .and_then(|_| git_cmd(&["-C", &repo.name, "submodule", "sync", "--recursive"], &repo.name))
@@ -83,12 +96,13 @@ pub trait GitAction {
         }
     }
 
-    fn checkout(&self) {
+    fn checkout(&self, flags: u8) {
         let results = self.get_repos()
             .par_iter()
             .inspect(|repo| println!("checking out {}", repo.name))
             .map(|repo| if !Path::new(&repo.name).exists() {
-                git_cmd(&["clone", "--recursive", &repo.ssh_url, &repo.name], &repo.name)
+                let url = if flags & 0b01 != 0 { repo.get_ssh_url() } else { repo.get_url() };
+                git_cmd(&["clone", "--recursive", url, &repo.name], &repo.name)
             } else {
                 git_cmd(&["-C", &repo.name, "fetch", "origin"], &repo.name)
                     .and_then(|_| git_cmd(&["-C", &repo.name, "submodule", "sync", "--recursive"], &repo.name))

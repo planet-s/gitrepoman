@@ -11,6 +11,10 @@ gitlab = API_TOKEN
 github = API_TOKEN
 ```
 
+### SSH
+
+By default, `https` URLS are used. To switch to `ssh` URLs, use the `--ssh` flag.
+
 ### Usage
 
 ```

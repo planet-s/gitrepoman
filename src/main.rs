@@ -53,7 +53,7 @@ fn main() {
         }
     };
 
-    let _flags = if matches.occurrences_of("ssh") > 0 { 0b01 } else { 0b00 }
+    let flags = if matches.occurrences_of("ssh") > 0 { 0b01 } else { 0b00 }
         + if matches.occurrences_of("force") > 0 { 0b10 } else { 0b00 };
 
     let (source, org, action) = if let Some(matches) = matches.subcommand_matches("gitlab") {
@@ -104,9 +104,9 @@ fn main() {
 
     match Action::from(action) {
         Ok(Action::List) => authenticated.list(),
-        Ok(Action::Clone) => authenticated.clone(),
-        Ok(Action::Pull) => authenticated.pull(),
-        Ok(Action::Checkout) => authenticated.checkout(),
+        Ok(Action::Clone) => authenticated.clone(flags),
+        Ok(Action::Pull) => authenticated.pull(flags),
+        Ok(Action::Checkout) => authenticated.checkout(flags),
         Err(cmd) => {
             eprintln!("{} is not a valid command", cmd);
             exit(1);
