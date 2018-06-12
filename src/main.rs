@@ -34,15 +34,12 @@ fn main() {
             .long("force")
             .short("f"))
         .subcommand(SubCommand::with_name("gitlab")
-            .arg(Arg::with_name("DOMAIN")
-                .required(true))
-            .arg(Arg::with_name("ACTION")
-                .required(true)))
+            .arg(Arg::with_name("DOMAIN").required(true))
+            .arg(Arg::with_name("NAMESPACE").required(true))
+            .arg(Arg::with_name("ACTION").required(true)))
         .subcommand(SubCommand::with_name("github")
-            .arg(Arg::with_name("DOMAIN")
-                .required(true))
-            .arg(Arg::with_name("ACTION")
-                .required(true)))
+            .arg(Arg::with_name("DOMAIN").required(true))
+            .arg(Arg::with_name("ACTION").required(true)))
         .get_matches();
 
     let config = match Config::new() {
@@ -56,57 +53,57 @@ fn main() {
     let flags = if matches.occurrences_of("ssh") > 0 { 0b01 } else { 0b00 }
         + if matches.occurrences_of("force") > 0 { 0b10 } else { 0b00 };
 
-    let (source, org, action) = if let Some(matches) = matches.subcommand_matches("gitlab") {
-        (GitService::GitLab, matches.value_of("DOMAIN").unwrap(), matches.value_of("ACTION").unwrap())
+    let (source, org, action, ns) = if let Some(matches) = matches.subcommand_matches("gitlab") {
+        (
+            GitService::GitLab,
+            matches.value_of("DOMAIN").unwrap(),
+            matches.value_of("ACTION").unwrap(),
+            matches.value_of("NAMESPACE").unwrap_or("")
+        )
     } else if let Some(matches) = matches.subcommand_matches("github") {
-        (GitService::GitHub, matches.value_of("DOMAIN").unwrap(), matches.value_of("ACTION").unwrap())
+        (
+            GitService::GitHub,
+            matches.value_of("DOMAIN").unwrap(),
+            matches.value_of("ACTION").unwrap(),
+            ""
+        )
     } else {
         eprintln!("no subcommand provided");
         exit(1);
     };
 
+    macro_rules! client {
+        ($name:tt, $token:expr) => {{
+            let token = match $token {
+                Some(token) => token,
+                None => {
+                    eprintln!("no {} token provided", stringify!($name));
+                    exit(1);
+                }
+            };
+
+            match $name::new(org.to_owned(), token) {
+                Ok(client) => Box::new(client),
+                Err(why) => {
+                    eprintln!("unable to authenticate client: {}", why);
+                    exit(1);
+                }
+            }
+
+
+        }};
+    }
+
     let authenticated: Box<GitAction> = match source {
-        GitService::GitHub => {
-            let token = match config.github {
-                Some(token) => token,
-                None => {
-                    eprintln!("no GitHub token provided");
-                    exit(1);
-                }
-            };
-
-            match GitHub::new(org.to_owned(), token) {
-                Ok(client) => Box::new(client),
-                Err(why) => {
-                    eprintln!("unable to authenticate client: {}", why);
-                    exit(1);
-                }
-            }
-        },
-        GitService::GitLab => {
-            let token = match config.gitlab {
-                Some(token) => token,
-                None => {
-                    eprintln!("no GitLab token provided");
-                    exit(1);
-                }
-            };
-
-            match Gitlab::new(org.to_owned(), token) {
-                Ok(client) => Box::new(client),
-                Err(why) => {
-                    eprintln!("unable to authenticate client: {}", why);
-                    exit(1);
-                }
-            }
-        }
+        GitService::GitHub => client!(GitHub, config.github),
+        GitService::GitLab => client!(Gitlab, config.gitlab),
     };
 
     match Action::from(action) {
-        Ok(Action::List) => authenticated.list(),
-        Ok(Action::Clone) => authenticated.clone(flags),
-        Ok(Action::Pull) => authenticated.pull(flags),
-        Ok(Action::Checkout) => authenticated.checkout(flags),
+        Ok(Action::List) => authenticated.list(ns),
+        Ok(Action::Clone) => authenticated.clone(flags, ns),
+        Ok(Action::Pull) => authenticated.pull(flags, ns),
+        Ok(Action::Checkout) => authenticated.checkout(flags, ns),
         Err(cmd) => {
             eprintln!("{} is not a valid command", cmd);
             exit(1);

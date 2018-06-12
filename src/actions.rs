@@ -1,6 +1,6 @@
 use std::io;
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Stdio};
 use rayon::prelude::*;
 
 #[derive(Debug, Deserialize, Eq, Hash)]
@@ -8,6 +8,7 @@ pub struct Repo {
     pub name: String,
     pub html_url: String,
     pub ssh_url: String,
+    pub namespace: String,
 }
 
 impl Repo {
@@ -35,7 +36,7 @@ pub enum GitError {
 }
 
 fn git_cmd(args: &[&str], name: &str) -> Result<String, (String, GitError)> {
-    match Command::new("git").args(args).status() {
+    match Command::new("git").args(args).stdout(Stdio::null()).stderr(Stdio::null()).status() {
         Ok(status) => if status.success() {
             Ok(name.to_owned())
         } else {
@@ -48,16 +49,20 @@ fn git_cmd(args: &[&str], name: &str) -> Result<String, (String, GitError)> {
 pub trait GitAction {
     fn get_repos(&self) -> Vec<Repo>;
 
-    fn list(&self) {
+    fn list(&self, namespace: &str) {
         for repo in self.get_repos() {
+            if repo.namespace == namespace {
+                continue
+            }
             println!("{}: {}", repo.name, repo.ssh_url);
         }
     }
 
-    fn clone(&self, flags: u8) {
+    fn clone(&self, flags: u8, namespace: &str) {
         let results = self.get_repos()
             .par_iter()
-            .inspect(|repo| println!("cloning {}", repo.name))
+            .filter(|repo| namespace == "" || repo.name == namespace)
+            .inspect(|repo| println!("cloning {} from {}", repo.name, repo.get_url()))
             .map(|repo| if !Path::new(&repo.name).exists() {
                 let url = if flags & 0b01 != 0 { repo.get_ssh_url() } else { repo.get_url() };
                 git_cmd(&["clone", "--recursive", url, &repo.name], &repo.name)
@@ -74,10 +79,11 @@ pub trait GitAction {
         }
     }
 
-    fn pull(&self, flags: u8) {
+    fn pull(&self, flags: u8, namespace: &str) {
         let results = self.get_repos()
             .par_iter()
-            .inspect(|repo| println!("pulling {}", repo.name))
+            .filter(|repo| namespace == "" || repo.name == namespace)
+            .inspect(|repo| println!("pulling {} from {}", repo.name, repo.get_url()))
             .map(|repo| if !Path::new(&repo.name).exists() {
                 let url = if flags & 0b01 != 0 { repo.get_ssh_url() } else { repo.get_url() };
                 git_cmd(&["clone", "--recursive", url, &repo.name], &repo.name)
@@ -96,10 +102,11 @@ pub trait GitAction {
         }
     }
 
-    fn checkout(&self, flags: u8) {
+    fn checkout(&self, flags: u8, namespace: &str) {
         let results = self.get_repos()
             .par_iter()
-            .inspect(|repo| println!("checking out {}", repo.name))
+            .filter(|repo| namespace == "" || repo.name == namespace)
+            .inspect(|repo| println!("checking out {} from {}", repo.name, repo.get_url()))
             .map(|repo| if !Path::new(&repo.name).exists() {
                 let url = if flags & 0b01 != 0 { repo.get_ssh_url() } else { repo.get_url() };
                 git_cmd(&["clone", "--recursive", url, &repo.name], &repo.name)

@@ -10,7 +10,8 @@ impl GitAction for Gitlab {
                 repos.push(Repo {
                     name: project.name,
                     html_url: project.http_url_to_repo,
-                    ssh_url: project.ssh_url_to_repo
+                    ssh_url: project.ssh_url_to_repo,
+                    namespace: project.namespace.full_path,
                 })
             }
         }

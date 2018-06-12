@@ -15,18 +15,30 @@ impl GitHub {
     }
 }
 
+#[derive(Debug, Deserialize)]
+pub struct GithubRepo {
+    pub name: String,
+    pub html_url: String,
+    pub ssh_url: String,
+}
+
 impl GitAction for GitHub {
     fn get_repos(&self) -> Vec<Repo> {
         let mut output = HashSet::new();
         for page in 0.. {
             let request = self.client.get()
                 .custom_endpoint(&format!("orgs/{}/repos?page={}", self.org, page))
-                .execute::<Vec<Repo>>();
+                .execute::<Vec<GithubRepo>>();
 
             if let Ok((_, _, Some(repos))) = request {
                 if repos.len() > 0 {
                     for repo in repos {
-                        output.insert(repo);
+                        output.insert(Repo {
+                            name: repo.name,
+                            html_url: repo.html_url,
+                            ssh_url: repo.ssh_url,
+                            namespace: "".into()
+                        });
                     }
                 } else {
                     break
