@@ -8,16 +8,6 @@ pub enum GitService {
     GitLab,
 }
 
-impl GitService {
-    pub fn from(input: &str) -> Option<GitService> {
-        match input {
-            "github" => Some(GitService::GitHub),
-            "gitlab" => Some(GitService::GitLab),
-            _ => None
-        }
-    }
-}
-
 #[derive(Deserialize)]
 pub struct Config {
     pub github: Option<String>,

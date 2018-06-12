@@ -2,7 +2,7 @@ use github_rs::client::Executor;
 use github_rs::client::Github as GithubApi;
 use github_rs::errors::Error as GithubError;
 use std::collections::HashSet;
-use ::{GitAccount, Repo};
+use actions::{GitAction, Repo};
 
 pub struct GitHub {
     client: GithubApi,
@@ -15,7 +15,7 @@ impl GitHub {
     }
 }
 
-impl GitAccount for GitHub {
+impl GitAction for GitHub {
     fn get_repos(&self) -> Vec<Repo> {
         let mut output = HashSet::new();
         for page in 0.. {

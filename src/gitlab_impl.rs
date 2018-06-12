@@ -1,7 +1,7 @@
 use gitlab::Gitlab;
-use ::{GitAccount, Repo};
+use actions::{GitAction, Repo};
 
-impl GitAccount for Gitlab {
+impl GitAction for Gitlab {
     fn get_repos(&self) -> Vec<Repo> {
         let mut repos = Vec::new();
 
