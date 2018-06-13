@@ -20,6 +20,7 @@ pub struct GithubRepo {
     pub name: String,
     pub html_url: String,
     pub ssh_url: String,
+    pub default_branch: String,
 }
 
 impl GitAction for GitHub {
@@ -37,7 +38,8 @@ impl GitAction for GitHub {
                             name: repo.name,
                             html_url: repo.html_url,
                             ssh_url: repo.ssh_url,
-                            namespace: "".into()
+                            namespace: "".into(),
+                            branch: repo.default_branch,
                         });
                     }
                 } else {

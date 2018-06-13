@@ -9,6 +9,7 @@ pub struct Repo {
     pub html_url: String,
     pub ssh_url: String,
     pub namespace: String,
+    pub branch: String,
 }
 
 impl Repo {
@@ -124,6 +125,7 @@ pub trait GitAction {
             |repo| println!("checking out {} from {}", repo.name, repo.get_url()),
             |repo, _url| {
                 git_cmd(&["-C", &repo.name, "fetch", "origin"], &repo.name)
+                    .and_then(|_| git_cmd(&["-C", &repo.name, "checkout", "-B", &repo.branch, &format!("origin/{}", repo.branch)], &repo.name))
                     .and_then(|_| git_cmd(&["-C", &repo.name, "submodule", "sync", "--recursive"], &repo.name))
                     .and_then(|_| git_cmd(&["-C", &repo.name, "submodule", "update", "--init", "--recursive"], &repo.name))
             },

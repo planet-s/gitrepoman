@@ -12,6 +12,7 @@ impl GitAction for Gitlab {
                     html_url: project.http_url_to_repo,
                     ssh_url: project.ssh_url_to_repo,
                     namespace: project.namespace.full_path,
+                    branch: project.default_branch.unwrap_or("master".to_string())
                 })
             }
         }
