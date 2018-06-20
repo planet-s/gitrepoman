@@ -139,7 +139,7 @@ pub trait GitAction {
             flags,
             namespace,
             |repo| println!("pulling mirror {} from {}", repo.name, repo.get_url()),
-            |repo, url| git_cmd(&["-C", &repo.name, "fetch", url], &repo.name),
+            |repo, url| git_cmd(&["-C", &repo.name, "remote", "update", "--prune"], &repo.name),
             |repo, url| git_cmd(&["clone", "--mirror", url, &repo.name], &repo.name)
         )
     }
