@@ -101,7 +101,7 @@ fn main() {
         }};
     }
 
-    let authenticated: Box<GitAction> = match source {
+    let authenticated: Box<dyn GitAction> = match source {
         GitService::GitHub => client!(GitHub, config.github),
         GitService::GitLab => client!(Gitlab, config.gitlab),
     };

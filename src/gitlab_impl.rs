@@ -5,7 +5,8 @@ impl GitAction for Gitlab {
     fn get_repos(&self) -> Vec<Repo> {
         let mut repos = Vec::new();
 
-        if let Ok(projects) = self.projects() {
+        let params: &[(&str, &str)] = &[];
+        if let Ok(projects) = self.projects(params) {
             for project in projects {
                 repos.push(Repo {
                     name: project.name,
